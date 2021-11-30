@@ -27,7 +27,7 @@ from synapse import module_api
 class PAMAuthProvider:
     """PAM auth provider for the Synapse Matrix server."""
 
-    def __init__(self, config: dict, api: module_api):
+    def __init__(self, *, config: dict, api: module_api):
         self.api = api
         self.create_users = config.create_users
         self.skip_user_check = config.skip_user_check
