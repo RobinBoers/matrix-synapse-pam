@@ -76,11 +76,11 @@ class PAMAuthProvider:
         if (await self.api.check_user_exists(user_id)) is None:
             # Bail if we don't want to create users in Matrix
             if not self.create_users:
-                log.info(f"{localpart} does not already exist")
+                logging.info(f"{localpart} does not already exist")
                 return None
 
             user_id = await self.api.register_user(localpart=localpart)
-            log.info(f"New user_id={user_id}")
+            logging.info(f"New user_id={user_id}")
 
         return (user_id, None)
 
