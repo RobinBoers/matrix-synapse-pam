@@ -15,6 +15,7 @@
 
 """Module containing the PAM auth provider for the Synapse Matrix server."""
 
+import logging
 import pwd
 from collections import namedtuple
 from typing import Awaitable, Callable, Optional, Tuple
@@ -48,21 +49,25 @@ class PAMAuthProvider:
 
         password = login_dict.get('password')
         if password is None:
+            logging.info("Password was None")
             return None
 
         user_id =  self.api.get_qualified_user_id(user_id)
         localpart = user_id.split(':')[0][1:]
+        logging.info(f"user_id={user_id}, localpart={localpart}")
 
         # check whether user even exists
         if not self.skip_user_check:
             try:
                 pwd.getpwnam(localpart)
             except KeyError:
+                logging.info(f"{localpart} is not in the passwd database")
                 return None
 
         # Now check the password
         if not pam.pam().authenticate(localpart, password,
                                       service='matrix-synapse'):
+            logging.info(f"PAM authentication failed for {localpart}")
             return None
 
         # From here on, the user is authenticated
@@ -71,9 +76,11 @@ class PAMAuthProvider:
         if (await self.api.check_user_exists(user_id)) is None:
             # Bail if we don't want to create users in Matrix
             if not self.create_users:
+                log.info(f"{localpart} does not already exist")
                 return None
 
             user_id = await self.api.register_user(localpart=localpart)
+            log.info(f"New user_id={user_id}")
 
         return (user_id, None)
 
