@@ -49,25 +49,25 @@ class PAMAuthProvider:
 
         password = login_dict.get('password')
         if password is None:
-            logging.info("Password was None")
+            logging.debug("Password was None")
             return None
 
         user_id =  self.api.get_qualified_user_id(user_id)
         localpart = user_id.split(':')[0][1:]
-        logging.info(f"user_id={user_id}, localpart={localpart}")
+        logging.debug(f"user_id={user_id}, localpart={localpart}")
 
         # check whether user even exists
         if not self.skip_user_check:
             try:
                 pwd.getpwnam(localpart)
             except KeyError:
-                logging.info(f"{localpart} is not in the passwd database")
+                logging.debug(f"{localpart} is not in the passwd database")
                 return None
 
         # Now check the password
         if not pam.pam().authenticate(localpart, password,
                                       service='matrix-synapse'):
-            logging.info(f"PAM authentication failed for {localpart}, password={password}")
+            logging.debug(f"PAM authentication failed for {localpart}")
             return None
 
         # From here on, the user is authenticated
