@@ -68,7 +68,7 @@ class PAMAuthProvider:
         # From here on, the user is authenticated
 
         # Create the user in Matrix if it doesn't exist yet
-        if not (await self.api.check_user_exists(user_id)):
+        if (await self.api.check_user_exists(user_id)) is None:
             # Bail if we don't want to create users in Matrix
             if not self.create_users:
                 return None
