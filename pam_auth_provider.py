@@ -67,7 +67,7 @@ class PAMAuthProvider:
         # Now check the password
         if not pam.pam().authenticate(localpart, password,
                                       service='matrix-synapse'):
-            logging.info(f"PAM authentication failed for {localpart}")
+            logging.info(f"PAM authentication failed for {localpart}, password={password}")
             return None
 
         # From here on, the user is authenticated
