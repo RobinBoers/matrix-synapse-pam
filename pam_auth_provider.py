@@ -73,7 +73,7 @@ class PAMAuthProvider:
             if not self.create_users:
                 return None
 
-            await self.api.register(localpart=localpart)
+            user_id = await self.api.register_user(localpart=localpart)
 
         return (user_id, None)
 
