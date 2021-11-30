@@ -46,7 +46,7 @@ class PAMAuthProvider:
         if login_type != "m.login.password":
             return None
 
-            password = login_dict.get('password')
+        password = login_dict.get('password')
         if password is None:
             return None
 
