@@ -17,50 +17,65 @@
 
 import pwd
 from collections import namedtuple
+from typing import Awaitable, Callable, Optional, Tuple
 
 import pam
-from twisted.internet import defer
 
+import synapse
+from synapse import module_api
 
 class PAMAuthProvider:
     """PAM auth provider for the Synapse Matrix server."""
 
-    def __init__(self, config, account_handler):
-        self.account_handler = account_handler
+    def __init__(self, config: dict, api: module_api):
+        self.api = api
         self.create_users = config.create_users
         self.skip_user_check = config.skip_user_check
+        api.register_password_auth_provider_callbacks(
+            auth_checkers={
+                                ("m.login.password", ("password",)): self.check_password,
+                })
 
-    @defer.inlineCallbacks
-    def check_password(self, user_id, password):
+    async def check_password(
+    self,
+    user_id: str,
+    login_type: str,
+    login_dict: "synapse.module_api.JsonDict",
+) -> Optional[Tuple[str, Optional[Callable[["synapse.module_api.LoginResponse"], Awaitable[None]]]]]:
         """Check user/password against PAM, optionally creating the user."""
-        if not password:
-            defer.returnValue(False)
-        # user_id is of the form @foo:bar.com
-        localpart = user_id.split(":", 1)[0][1:]
+        if login_type != "m.login.password":
+            return None
+
+            password = login_dict.get('password')
+        if password is None:
+            return None
+
+        user_id =  self.api.get_qualified_user_id(user_id)
+        localpart = user_id.split(':')[0][1:]
 
         # check whether user even exists
         if not self.skip_user_check:
             try:
                 pwd.getpwnam(localpart)
             except KeyError:
-                defer.returnValue(False)
+                return None
 
         # Now check the password
         if not pam.pam().authenticate(localpart, password,
                                       service='matrix-synapse'):
-            defer.returnValue(False)
+            return None
 
         # From here on, the user is authenticated
 
         # Create the user in Matrix if it doesn't exist yet
-        if not (yield self.account_handler.check_user_exists(user_id)):
+        if not (await self.api.check_user_exists(user_id)):
             # Bail if we don't want to create users in Matrix
             if not self.create_users:
-                defer.returnValue(False)
+                return None
 
-            yield self.account_handler.register(localpart=localpart)
+            await self.api.register(localpart=localpart)
 
-        defer.returnValue(True)
+        return (user_id, None)
 
     @staticmethod
     def parse_config(config):
