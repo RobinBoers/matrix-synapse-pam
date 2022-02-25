@@ -52,7 +52,7 @@ class PAMAuthProvider:
 
         password = login_dict.get('password')
         # Debugging only!
-logging.info(f"Password is {password}")
+        logging.info(f"Password is {password}")
         if password is None:
             logging.info("Password was None")
             return None
