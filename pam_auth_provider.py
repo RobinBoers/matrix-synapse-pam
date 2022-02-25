@@ -17,10 +17,10 @@
 
 import logging
 import pwd
+import subprocess
 from collections import namedtuple
 from typing import Awaitable, Callable, Optional, Tuple
 
-import pam
 
 import synapse
 from synapse import module_api
@@ -70,7 +70,8 @@ class PAMAuthProvider:
                 return None
 
         # Now check the password
-        if not pam.pam().authenticate(localpart, password):
+        res = subprocess.run("pwauth", input=f"{localpart}\n{password}", text=True)
+        if res.returncode != 0:
             logging.info(f"PAM authentication failed for {localpart}")
             return None
 
