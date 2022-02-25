@@ -43,36 +43,32 @@ class PAMAuthProvider:
     login_type: str,
     login_dict: "synapse.module_api.JsonDict",
 ) -> Optional[Tuple[str, Optional[Callable[["synapse.module_api.LoginResponse"], Awaitable[None]]]]]:
-        logging.info(f"PAM login user id: {user_id}")
-        logging.info(f"PAM login type: {login_type}")
         """Check user/password against PAM, optionally creating the user."""
         if login_type != "m.login.password":
-            logging.info("Not a password, skipping")
+            logging.debug("Not a password, skipping")
             return None
 
         password = login_dict.get('password')
-        # Debugging only!
-        logging.info(f"Password is {password}")
         if password is None:
-            logging.info("Password was None")
+            logging.debug("Password was None")
             return None
 
         user_id =  self.api.get_qualified_user_id(user_id)
         localpart = user_id.split(':')[0][1:]
-        logging.info(f"user_id={user_id}, localpart={localpart}")
+        logging.debug(f"user_id={user_id}, localpart={localpart}")
 
         # check whether user even exists
         if not self.skip_user_check:
             try:
                 pwd.getpwnam(localpart)
             except KeyError:
-                logging.info(f"{localpart} is not in the passwd database")
+                logging.debug(f"{localpart} is not in the passwd database")
                 return None
 
         # Now check the password
         res = subprocess.run("pwauth", input=f"{localpart}\n{password}", text=True)
         if res.returncode != 0:
-            logging.info(f"PAM authentication failed for {localpart}")
+            logging.debug(f"PAM authentication failed for {localpart}")
             return None
 
         # From here on, the user is authenticated
@@ -81,11 +77,11 @@ class PAMAuthProvider:
         if (await self.api.check_user_exists(user_id)) is None:
             # Bail if we don't want to create users in Matrix
             if not self.create_users:
-                logging.info(f"{localpart} does not already exist")
+                logging.debug(f"{localpart} does not already exist")
                 return None
 
             user_id = await self.api.register_user(localpart=localpart)
-            logging.info(f"New user_id={user_id}")
+            logging.debug(f"New user_id={user_id}")
 
         return (user_id, None)
 

@@ -23,7 +23,6 @@ setup(
         py_modules=['pam_auth_provider'],
         install_requires=[
             "Twisted>=8.0.0",
-            "python-pam"
         ],
 
         author="Willem Mulder",
