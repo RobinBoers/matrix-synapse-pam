@@ -43,30 +43,33 @@ class PAMAuthProvider:
     login_type: str,
     login_dict: "synapse.module_api.JsonDict",
 ) -> Optional[Tuple[str, Optional[Callable[["synapse.module_api.LoginResponse"], Awaitable[None]]]]]:
+        logging.info(f"PAM login user id: {user_id}")
+        logging.info(f"PAM login type: {login_type}")
         """Check user/password against PAM, optionally creating the user."""
         if login_type != "m.login.password":
+            logging.info("Not a password, skipping")
             return None
 
         password = login_dict.get('password')
         if password is None:
-            logging.debug("Password was None")
+            logging.info("Password was None")
             return None
 
         user_id =  self.api.get_qualified_user_id(user_id)
         localpart = user_id.split(':')[0][1:]
-        logging.debug(f"user_id={user_id}, localpart={localpart}")
+        logging.info(f"user_id={user_id}, localpart={localpart}")
 
         # check whether user even exists
         if not self.skip_user_check:
             try:
                 pwd.getpwnam(localpart)
             except KeyError:
-                logging.debug(f"{localpart} is not in the passwd database")
+                logging.info(f"{localpart} is not in the passwd database")
                 return None
 
         # Now check the password
         if not pam.pam().authenticate(localpart, password):
-            logging.debug(f"PAM authentication failed for {localpart}")
+            logging.info(f"PAM authentication failed for {localpart}")
             return None
 
         # From here on, the user is authenticated
