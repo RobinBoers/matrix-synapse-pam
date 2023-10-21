@@ -6,11 +6,10 @@ Allows Synapse to use UNIX accounts through PAM.
 
 ```shell
 git clone https://github.com/RobinBoers/matrix-synapse-pam
-sudo ./setup.py install
+sudo cp ./matrix-synapse-pam/pam_auth_provider.py /opt/venvs/matrix-synapse/lib/python3.11/site-packages
 ```
 
-This auth provider depends on [`pwauth`](https://manpages.debian.org/stretch/pwauth/pwauth.8.en.html). 
-Also make sure that `python` points to the python 3 interpreter, and that `python3-setuptools` is installed.
+This auth provider depends on [`pwauth`](https://manpages.debian.org/stretch/pwauth/pwauth.8.en.html).
 
 ## Usage
 
