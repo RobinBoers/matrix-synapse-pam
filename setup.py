@@ -21,10 +21,6 @@ setup(
         name="matrix-synapse-pam",
         version="0.1.3",
         py_modules=['pam_auth_provider'],
-        install_requires=[
-            "Twisted>=8.0.0",
-        ],
-
         author="Willem Mulder",
         author_email="willemmaster@hotmail.com",
         description="A PAM/UNIX auth provider for Synapse",
