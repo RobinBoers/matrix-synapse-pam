@@ -21,7 +21,6 @@ import subprocess
 from collections import namedtuple
 from typing import Awaitable, Callable, Optional, Tuple
 
-
 import synapse
 from synapse import module_api
 
